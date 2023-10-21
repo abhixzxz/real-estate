@@ -17,8 +17,8 @@ mongoose
   .catch((err) => {
     console.log(err);
   });
-app.listen(3000, () => {
-  console.log(`Server is running on 3000`);
+app.listen(3001, () => {
+  console.log(`Server is running on 3001`);
 });
 
 app.use("/api/users", userRouter);
