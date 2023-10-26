@@ -6,6 +6,7 @@ import {
   signInSuccess,
 } from "../redux/user/userSlice";
 import { useDispatch, useSelector } from "react-redux";
+import Oauth from "../components/Oauth";
 
 function SignIn() {
   const [formData, setFormData] = useState(false);
@@ -19,7 +20,7 @@ function SignIn() {
       [e.target.id]: e.target.value,
     });
   };
-  // console.log("formDat:=>", formData); 
+  // console.log("formDat:=>", formData);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,6 +71,7 @@ function SignIn() {
           >
             {loading === true ? "loading.." : "Sign - In"}
           </button>
+          <Oauth />
         </form>
         <div className="flex gap-3">
           <p className="">Dont have an account?</p>
