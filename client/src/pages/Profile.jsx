@@ -7,6 +7,11 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
+import {
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
+} from "../redux/user/userSlice";
 
 function Profile() {
   const fileRef = useRef(null);
@@ -17,13 +22,10 @@ function Profile() {
   const [filePerc, setFilePerc] = useState(0);
   const [fileUploadError, setFileUploadError] = useState(false);
   const [formData, setFormData] = useState({});
-  // const [updateSuccess, setUpdateSuccess] = useState(false);
-  // const [showListingsError, setShowListingsError] = useState(false);
-  // const [userListings, setUserListings] = useState([]);
-  // const dispatch = useDispatch();
-  console.log(formData);
-  console.log(filePerc);
-  console.log(fileUploadError);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [showListingsError, setShowListingsError] = useState(false);
+  const [userListings, setUserListings] = useState([]);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (file) {
@@ -55,10 +57,38 @@ function Profile() {
     );
   };
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(updateUserStart());
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
+
+      dispatch(updateUserSuccess(data));
+      setUpdateSuccess(true);
+    } catch (error) {
+      dispatch(updateUserFailure(error.message));
+    }
+  };
+
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-center font-semibold text-3xl my-6 ">Profile</h1>
-      <form className="flex flex-col gap-2">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
         <input
           onChange={(e) => setFile(e.target.files[0])}
           type="file"
@@ -69,7 +99,7 @@ function Profile() {
         <img
           onClick={() => fileRef.current.click()}
           src={formData.avatar || currentUser.avatar}
-          alt="profile image"
+          alt="profile"
           className="rounded-full h-24 w-24 object-cover cursor-pointer self-center mt-2"
         />
         <p className="text-sm self-center">
@@ -86,25 +116,31 @@ function Profile() {
           )}
         </p>
         <input
+          type="text"
+          placeholder="username"
+          defaultValue={currentUser.username}
           id="username"
-          type="text"
-          className="rounded-lg p-3 "
-          placeholder="Username"
+          className="border p-3 rounded-lg"
+          onChange={handleChange}
         />
         <input
-          id="email"
-          type="text"
-          className="rounded-lg p-3 "
+          type="email"
           placeholder="email"
+          id="email"
+          defaultValue={currentUser.email}
+          className="border p-3 rounded-lg"
+          onChange={handleChange}
         />
         <input
-          id="password"
           type="password"
-          className="rounded-lg p-3 "
           placeholder="password"
+          onChange={handleChange}
+          id="password"
+          className="border p-3 rounded-lg"
         />
+
         <button className="bg-slate-800 p-3 text-white rounded uppercase hover:opacity-90 disabled:opacity-80">
-          submit
+          UPDATE
         </button>
       </form>
       <div className=" flex m-2 justify-between">
